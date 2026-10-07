@@ -1,0 +1,90 @@
+/*
+ * Design tokens.
+ * Light: white surfaces, cobalt primary.
+ * Dark : blue only — every surface, border and text colour is a shade of blue.
+ *        The single exception is --danger, kept legible so errors stay obvious.
+ */
+
+:root {
+  --font-display: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --sidebar-width: 268px;
+}
+
+/* ---------------- Light: blue + white ---------------- */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #f3f7ff;
+  --surface: #ffffff;
+  --surface-2: #eef4ff;
+  --surface-3: #e3ecff;
+  --border: #d6e2f7;
+  --border-strong: #b9cdf0;
+
+  --text: #0a1a3f;
+  --text-muted: #566a91;
+  --text-faint: #8496ba;
+
+  --primary: #1f4fe0;
+  --primary-hover: #1a43c4;
+  --primary-soft: #e3ecff;
+  --on-primary: #ffffff;
+  --focus: rgba(31, 79, 224, 0.3);
+
+  --danger: #c62d3f;
+  --danger-soft: #fdecee;
+
+  --brand-gradient: linear-gradient(155deg, #1230a0 0%, #1f4fe0 55%, #4f94ff 100%);
+  --brand-text: #ffffff;
+  --brand-text-soft: rgba(255, 255, 255, 0.78);
+  --brand-line: rgba(255, 255, 255, 0.22);
+
+  --shadow-sm: 0 1px 2px rgba(10, 26, 63, 0.06);
+  --shadow-md: 0 1px 2px rgba(10, 26, 63, 0.05), 0 10px 30px rgba(31, 79, 224, 0.1);
+  --shadow-lg: 0 24px 60px rgba(10, 26, 63, 0.22);
+  --backdrop: rgba(10, 26, 63, 0.45);
+}
+
+/* ---------------- Dark: shades of blue only ---------------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #040a1c;
+  --surface: #091632;
+  --surface-2: #0d1d42;
+  --surface-3: #12285a;
+  --border: #1a3270;
+  --border-strong: #27499a;
+
+  --text: #dcebff;
+  --text-muted: #8aa8e0;
+  --text-faint: #5f80c2;
+
+  --primary: #5b94ff;
+  --primary-hover: #7eaaff;
+  --primary-soft: #12285a;
+  --on-primary: #03102e;
+  --focus: rgba(91, 148, 255, 0.45);
+
+  --danger: #ff9aa8;
+  --danger-soft: #1b2250;
+
+  --brand-gradient: linear-gradient(155deg, #040f33 0%, #0a2466 55%, #1949ad 100%);
+  --brand-text: #e8f1ff;
+  --brand-text-soft: rgba(204, 224, 255, 0.78);
+  --brand-line: rgba(140, 180, 255, 0.28);
+
+  --shadow-sm: 0 1px 2px rgba(1, 5, 20, 0.5);
+  --shadow-md: 0 1px 2px rgba(1, 5, 20, 0.5), 0 10px 30px rgba(1, 8, 30, 0.55);
+  --shadow-lg: 0 24px 60px rgba(1, 5, 20, 0.7);
+  --backdrop: rgba(2, 7, 24, 0.7);
+}

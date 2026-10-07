@@ -1,0 +1,7 @@
+/* All styles live in src/styles/. Order matters: tokens first, then base. */
+@import "./styles/variables.css";
+@import "./styles/base.css";
+@import "./styles/components.css";
+@import "./styles/auth.css";
+@import "./styles/layout.css";
+@import "./styles/pages.css";
