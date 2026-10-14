@@ -133,6 +133,7 @@ const loginRequestOtp =
       const {
         login,
       } = req.body;
+      console.log("loginRequestOtp called with login:", login);
 
       const result =
         await authService.requestLoginOtp(
@@ -172,6 +173,8 @@ const loginVerifyOtp =
         sessionId,
         otp,
       } = req.body;
+
+      console.log("loginVerifyOtp called with sessionId:", sessionId, "and otp:", otp);
 
       if (
         !sessionId ||
@@ -282,6 +285,60 @@ const logout =
       next(error);
     }
   };
+
+
+const getMe = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).lean();
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const householdId = req.user.householdId || user.defaultHouseholdId;
+
+    let household = null;
+    let person = null;
+    let role = null;
+
+    if (householdId) {
+      household = await Household.findById(householdId).lean();
+
+      const membership = await HouseholdMember.findOne({
+        householdId,
+        userId: user._id,
+      })
+        .populate("personId")
+        .lean();
+
+      if (membership) {
+        role = membership.role;
+        person = membership.personId || null;
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
+          emailVerified: user.emailVerified,
+          mobileVerified: user.mobileVerified,
+        },
+        household,
+        person,
+        role,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
   
 
 module.exports = {
@@ -291,4 +348,5 @@ module.exports = {
   loginVerifyOtp,
   refresh,
   logout,
+  getMe,
 };

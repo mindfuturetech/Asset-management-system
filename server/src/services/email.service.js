@@ -33,6 +33,29 @@ const sendOtpEmail = async ({ email, otp, name }) => {
   });
 };
 
+const sendHouseholdInvitationEmail = async ({
+  email,
+  householdName,
+  inviterName,
+  inviteUrl,
+}) => {
+  await transporter.sendMail({
+    from: process.env.MAIL_FROM,
+    to: email,
+    subject: `Invitation to ${householdName}`,
+
+    text: [
+      `${inviterName} invited you to access ${householdName}.`,
+      "",
+      `Accept the invitation: ${inviteUrl}`,
+      "",
+      "This invitation expires in 7 days.",
+      "If you were not expecting this invitation, ignore this message.",
+    ].join("\n"),
+  });
+};
+
 module.exports = {
   sendOtpEmail,
+  sendHouseholdInvitationEmail,
 };

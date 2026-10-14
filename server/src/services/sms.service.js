@@ -15,6 +15,27 @@ const sendOtpSms = async ({ mobile, otp }) => {
   });
 };
 
+const sendHouseholdInvitationSms = async ({
+  mobile,
+  householdName,
+  inviteUrl,
+}) => {
+  await client.messages.create({
+    to: mobile,
+    from: process.env.TWILIO_PHONE_NUMBER,
+
+    body:
+      `You have been invited to ${householdName}. ` +
+      `Accept the invitation: ${inviteUrl}`,
+  });
+};
+
 module.exports = {
   sendOtpSms,
+  sendHouseholdInvitationSms,
+};
+
+module.exports = {
+  sendOtpSms,
+  sendHouseholdInvitationSms,
 };

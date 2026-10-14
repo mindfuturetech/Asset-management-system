@@ -6,6 +6,9 @@ const cookieParser = require("cookie-parser");
 const authRoutes = require("./routes/auth.routes");
 const householdRoutes = require("./routes/household.routes");
 const personRoutes = require("./routes/person.routes");
+const householdInvitationRoutes = require("./routes/householdInvitation.routes");
+const invitationRoutes = require("./routes/invitation.routes");
+
 
 const {
   errorHandler,
@@ -50,6 +53,16 @@ app.use(
 app.use(
   "/api/v1/people",
   personRoutes
+);
+
+app.use(
+  "/api/v1/households",
+  householdInvitationRoutes
+);
+
+app.use(
+  "/api/v1/invitations",
+  invitationRoutes
 );
 
 app.use(errorHandler);

@@ -5,22 +5,41 @@ const {
 } = require("../middleware/auth.middleware");
 
 const {
-  createPerson,
-  getPeople,
+  requireHouseholdPermission,
+  requirePersonScope,
+} = require("../middleware/householdAccess.middleware");
+
+const {
+  createFamilyPerson,
+  getFamilyPeople,
 } = require("../controllers/person.controller");
 
 const router = express.Router();
 
 router.use(protect);
 
+// router.post(
+//   "/",
+//   createPerson
+// );
 router.post(
-  "/",
-  createPerson
+  "/:householdId/people",
+  protect,
+  requireHouseholdPermission("people:create"),
+  createFamilyPerson
 );
 
+// router.get(
+//   "/",
+//   getPeople
+// );
+
+// Get family members
 router.get(
-  "/",
-  getPeople
+  "/:householdId/people",
+  protect,
+  requireHouseholdPermission("people:read"),
+  getFamilyPeople
 );
 
 module.exports = router;
