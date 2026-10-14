@@ -1,5 +1,6 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
+const { protect } = require("../middleware/auth.middleware");
 
 const {
   registerRequestOtp,
@@ -8,6 +9,7 @@ const {
   loginVerifyOtp,
   refresh,
   logout,
+  getMe,
 } = require("../controllers/auth.controllers");
 
 const router =
@@ -18,7 +20,7 @@ const otpLimiter =
     windowMs:
       15 * 60 * 1000,
 
-    max: 10,
+    max: 20,
 
     message: {
       success: false,
@@ -79,5 +81,7 @@ router.post(
   "/logout",
   logout
 );
+
+router.get("/me", protect, getMe);
 
 module.exports = router;

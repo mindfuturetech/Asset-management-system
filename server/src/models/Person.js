@@ -26,11 +26,14 @@ const personSchema = new mongoose.Schema(
       default: null,
     },
 
+    // Null when this person does not have a login.
     linkedUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
+
+    
 
     status: {
       type: String,

@@ -321,18 +321,18 @@ const verifyRegisterOtp = async ({
         */
         await HouseholdMember.create(
           [
-            {
-              householdId:
-                household._id,
+              {
+                householdId: household._id,
+                userId: user._id,
 
-              personId:
-                person._id,
+                role: "OWNER",
+                accessScope: "ALL_PEOPLE",
+                personIds: [],
+                status: "ACTIVE",
 
-              userId:
-                user._id,
-
-              role: "OWNER",
-            },
+                // The newly registered user becomes the initial owner.
+                grantedBy: user._id,
+              },
           ],
           {
             session:
