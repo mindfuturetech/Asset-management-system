@@ -61,7 +61,7 @@ export default function DashboardPage() {
         <div className="panel__header">
           <h2>Household members</h2>
           <Link to="/people" className="panel__link">
-            Manage people
+            Manage Family
           </Link>
         </div>
 

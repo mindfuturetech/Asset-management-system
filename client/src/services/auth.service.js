@@ -21,6 +21,7 @@ export const registerRequestOtp = async ({ name, email, mobile }) => {
     email,
     mobile,
   });
+  console.log(`Register OTP requested for ${email}. Session ID: ${data.data.sessionId}, Expires at: ${data.data.expiresAt}`);
   return data.data; // { sessionId, expiresAt }
 };
 
@@ -30,6 +31,7 @@ export const registerVerifyOtp = async ({ sessionId, otp }) => {
     otp,
   });
   setAccessToken(data.data.accessToken);
+  console.log(`Register OTP verified for session ${sessionId}. User: ${data.data.user.email}`);
   return data.data; // { user, household, person, accessToken }
 };
 
@@ -37,6 +39,7 @@ export const registerVerifyOtp = async ({ sessionId, otp }) => {
 
 export const loginRequestOtp = async ({ login }) => {
   const { data } = await rawApi.post("/auth/login/request-otp", { login });
+  console.log(`Login OTP requested for ${login}. Session ID: ${data.data.sessionId}, Expires at: ${data.data.expiresAt}`);
   return data.data; // { sessionId, expiresAt }
 };
 
@@ -46,6 +49,7 @@ export const loginVerifyOtp = async ({ sessionId, otp }) => {
     otp,
   });
   setAccessToken(data.data.accessToken);
+  console.log(`Login OTP verified for session ${sessionId}. User: ${data.data.user.email}, Household ID: ${data.data.householdId}`);
   return data.data; // { user, householdId, accessToken }
 };
 
@@ -57,7 +61,9 @@ export const refresh = () => refreshSession();
 export const logout = async () => {
   try {
     await rawApi.post("/auth/logout");
+    console.log("Logout request sent to server.");
   } finally {
+    console.log("Clearing access token on client side.");
     setAccessToken(null);
   }
 };

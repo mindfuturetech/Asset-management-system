@@ -105,11 +105,11 @@ export default function PeoplePage() {
     <div className="page">
       <header className="page__header">
         <div>
-          <h1>People</h1>
+          <h1>Family</h1>
           <p>Everyone in your household whose assets you manage.</p>
         </div>
         <Button icon={Plus} onClick={() => setOpen(true)}>
-          Add person
+          Add member
         </Button>
       </header>
 

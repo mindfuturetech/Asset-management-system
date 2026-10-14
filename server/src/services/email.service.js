@@ -14,13 +14,13 @@ const sendOtpEmail = async ({ email, otp, name }) => {
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
     to: email,
-    subject: "Your Asset Management OTP",
+    subject: "Your Portfolio Management OTP",
     text: `Hello ${name || "User"}, your OTP is ${otp}. It is valid for ${
       process.env.OTP_EXPIRES_MINUTES || 5
     } minutes. Do not share this OTP with anyone.`,
     html: `
       <div style="font-family: Arial, sans-serif;">
-        <h2>Asset Management</h2>
+        <h2>Portfolio Management</h2>
         <p>Hello ${name || "User"},</p>
         <p>Your OTP is:</p>
         <h1>${otp}</h1>

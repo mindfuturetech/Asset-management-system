@@ -124,7 +124,7 @@ const requestLoginOtp = async ({
     mobile: user.mobile,
     purpose: "LOGIN",
   });
-
+  console.log(`otpSession active for ${otpSession.email} and ${otpSession.mobile}`);
   return otpSession;
 };
 
@@ -431,7 +431,7 @@ const verifyLoginOtp = async ({
       householdId:
         user.defaultHouseholdId,
     });
-
+  console.log(`User ${user.email} logged in successfully. Access token and refresh token generated.`);
   return {
     user,
     householdId:

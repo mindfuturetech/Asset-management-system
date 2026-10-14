@@ -32,7 +32,7 @@ app.get(
     res.json({
       success: true,
       message:
-        "Asset Management API is running",
+        "Portfolio Management API is running",
     });
   }
 );

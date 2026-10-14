@@ -7,7 +7,7 @@ const client = twilio(
 
 const sendOtpSms = async ({ mobile, otp }) => {
   await client.messages.create({
-    body: `Your Asset Management OTP is ${otp}. Valid for ${
+    body: `Your Portfolio Management OTP is ${otp}. Valid for ${
       process.env.OTP_EXPIRES_MINUTES || 5
     } minutes. Do not share it.`,
     from: process.env.TWILIO_PHONE_NUMBER,

@@ -45,7 +45,7 @@ export default function AuthLayout({ children, footer }) {
         </Link>
 
         <div className="auth__brand-body">
-          <h2>Everything your family owns, in one place.</h2>
+          <h2>Everything your family owns, in one safe place.</h2>
           <ul>
             {POINTS.map(({ icon: Icon, title, text }) => (
               <li key={title}>

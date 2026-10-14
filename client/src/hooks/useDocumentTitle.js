@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export const APP_NAME = import.meta.env.VITE_APP_NAME || "Asset Manager";
+export const APP_NAME = import.meta.env.VITE_APP_NAME || "Portfolio Manager";
 
 export default function useDocumentTitle(title) {
   useEffect(() => {

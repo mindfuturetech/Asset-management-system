@@ -1,6 +1,6 @@
-# Asset Manager — Client
+# Portfolio Manager — Client
 
-React + Vite front end for the Asset Management API. Blue-and-white light theme, blue-only dark theme, OTP sign-in and registration.
+React + Vite front end for the Portfolio Management API. Blue-and-white light theme, blue-only dark theme, OTP sign-in and registration.
 
 ## Run it
 
@@ -23,7 +23,7 @@ COOKIE_SECURE=false                  # for plain http on localhost
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `VITE_API_BASE_URL` | `http://localhost:5000/api/v1` | API base URL |
-| `VITE_APP_NAME` | `Asset Manager` | Name shown in the UI and tab title |
+| `VITE_APP_NAME` | `Portfolio Manager` | Name shown in the UI and tab title |
 | `VITE_DEFAULT_COUNTRY_CODE` | `+91` | Added when someone types a 10-digit mobile number on the login screen |
 
 ## Folder structure

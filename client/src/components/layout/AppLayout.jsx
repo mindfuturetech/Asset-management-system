@@ -8,7 +8,7 @@ import useToast from "../../hooks/useToast";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/people", label: "People", icon: Users },
+  { to: "/people", label: "Family", icon: Users },
 ];
 
 export default function AppLayout() {

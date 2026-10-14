@@ -271,7 +271,8 @@ const logout =
         "refreshToken",
         cookieOptions
       );
-
+      console.log("Refresh token cookie cleared");
+      console.log("Logout successful");
       return res.status(200).json({
         success: true,
         message:
