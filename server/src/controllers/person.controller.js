@@ -19,7 +19,6 @@ const createFamilyPerson = async (req, res, next) => {
       relationship: relationship || "",
       dateOfBirth: dateOfBirth || null,
       linkedUserId: null,
-      createdBy: req.user.id,
     });
 
     return res.status(201).json({

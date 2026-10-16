@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, LogOut, Users } from "lucide-react";
+import { LayoutDashboard, LogOut, Users, ShieldCheck } from "lucide-react";
 import Logo from "../ui/Logo";
 import Avatar from "../ui/Avatar";
 import ThemeToggle from "../ui/ThemeToggle";
@@ -9,6 +9,7 @@ import useToast from "../../hooks/useToast";
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/people", label: "Family", icon: Users },
+  { to: "/grant-access", label: "Grant Access", icon: ShieldCheck },
 ];
 
 export default function AppLayout() {

@@ -1,0 +1,97 @@
+/* ============ Accept invitation ============ */
+.ai-page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+
+.ai-card {
+    width: 100%;
+    max-width: 440px;
+    display: grid;
+    justify-items: start;
+    gap: 12px;
+    padding: 32px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.ai-card h1 {
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+}
+
+.ai-card .alert {
+    width: 100%;
+    margin: 0;
+}
+
+.ai-muted {
+    color: var(--text-muted);
+}
+
+.ai-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+}
+
+.ai-icon--info {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.ai-icon--success {
+    background: #e3f4ea;
+    color: var(--success, #0b6b3a);
+}
+
+.ai-icon--error {
+    background: #fbe9e8;
+    color: var(--danger, #b3261e);
+}
+
+.ai-details {
+    width: 100%;
+    margin: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.ai-details>div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 14px;
+}
+
+.ai-details>div+div {
+    border-top: 1px solid var(--border);
+}
+
+.ai-details dt {
+    color: var(--text-muted);
+}
+
+.ai-details dd {
+    margin: 0;
+    font-weight: 600;
+}
+
+.ai-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+@media (max-width: 560px) {
+    .ai-card {
+        padding: 24px 20px;
+    }
+}
