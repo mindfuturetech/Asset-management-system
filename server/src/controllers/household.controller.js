@@ -61,6 +61,54 @@ const getMyHousehold = async (req, res, next) => {
   }
 };
 
+// New API: GET /api/v1/households/my-access
+const getMyHouseholdAccess = async (req, res, next) => {
+  try {
+    // Find every active household membership of the logged-in user.
+    const memberships = await HouseholdMember.find({
+      userId: req.user.id,
+      status: "ACTIVE",
+    })
+      .populate("householdId", "name")
+      .populate("personIds", "name relationship status")
+      .sort({ createdAt: -1 });
+
+    // Remove memberships whose household no longer exists.
+    const validMemberships = memberships.filter(
+      (membership) => membership.householdId
+    );
+
+    const households = validMemberships.map((membership) => ({
+      householdId: membership.householdId._id,
+      householdName: membership.householdId.name,
+      role: membership.role,
+      accessScope: membership.accessScope,
+
+      // Empty people array does not mean no access when
+      // accessScope is ALL_PEOPLE.
+      people:
+        membership.accessScope === "ALL_PEOPLE"
+          ? []
+          : membership.personIds.map((person) => ({
+              personId: person._id,
+              name: person.name,
+              relationship: person.relationship,
+            })),
+
+      status: membership.status,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      count: households.length,
+      data: households,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getMyHousehold,
+  getMyHouseholdAccess,
 };
