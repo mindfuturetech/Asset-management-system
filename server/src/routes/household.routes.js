@@ -18,10 +18,7 @@ router.get(
 );
 
 // Get all households accessible to the logged-in user
-router.get(
-  "/my-access",
-  protect,
-  getMyHouseholdAccess
-);
+router.get("/my-access", protect, getMyHouseholdAccess);
+
 
 module.exports = router;

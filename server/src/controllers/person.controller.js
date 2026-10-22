@@ -38,6 +38,8 @@ const getFamilyPeople = async (req, res, next) => {
       status: "ACTIVE",
     };
 
+    
+
     // Users with limited access see only assigned people.
     if (req.householdAccess.accessScope === "SELECTED_PEOPLE") {
       filter._id = {

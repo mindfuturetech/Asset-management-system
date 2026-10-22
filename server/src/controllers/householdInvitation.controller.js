@@ -7,11 +7,11 @@ const Household = require("../models/Household");
 const HouseholdMember = require("../models/HouseholdMember");
 const HouseholdInvitation = require("../models/HouseholdInvitation");
 const {
-  sendHouseholdInvitationEmail,
+    sendHouseholdInvitationEmail,
 } = require("../services/email.service");
 
 const {
-  sendHouseholdInvitationSms,
+    sendHouseholdInvitationSms,
 } = require("../services/sms.service");
 
 const normalizeEmail = (email = "") =>
@@ -23,6 +23,226 @@ const normalizeMobile = (mobile = "") =>
 const hashInvitationToken = (token) =>
     crypto.createHash("sha256").update(token).digest("hex");
 
+// const createInvitation = async (req, res, next) => {
+//     try {
+//         const { householdId } = req.params;
+
+//         let {
+//             recipientEmail = "",
+//             recipientMobile = "",
+//             role,
+//             accessScope,
+//             personIds = [],
+//             linkPersonId = null,
+//         } = req.body;
+
+//         recipientEmail = normalizeEmail(recipientEmail);
+//         recipientMobile = normalizeMobile(recipientMobile);
+
+//         if (!recipientEmail && !recipientMobile) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Recipient email or mobile is required",
+//             });
+//         }
+
+//         const allowedRoles = [
+//             "ADMIN",
+//             "ASSET_MANAGER",
+//             "EDITOR",
+//             "VIEWER",
+//         ];
+
+//         if (!allowedRoles.includes(role)) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Invalid invitation role",
+//             });
+//         }
+
+//         // An ADMIN cannot appoint another ADMIN.
+//         if (
+//             req.householdAccess.role === "ADMIN" &&
+//             !["ASSET_MANAGER", "EDITOR", "VIEWER"].includes(role)
+//         ) {
+//             return res.status(403).json({
+//                 success: false,
+//                 message: "You cannot grant this role",
+//             });
+//         }
+
+//         if (!["ALL_PEOPLE", "SELECTED_PEOPLE"].includes(accessScope)) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Invalid access scope",
+//             });
+//         }
+
+//         if (linkPersonId) {
+//             if (
+//                 accessScope !== "SELECTED_PEOPLE" ||
+//                 personIds.length !== 1 ||
+//                 personIds[0].toString() !== linkPersonId.toString()
+//             ) {
+//                 return res.status(400).json({
+//                     success: false,
+//                     message:
+//                         "A profile-linking invitation must target exactly the linked person",
+//                 });
+//             }
+//         }
+
+//         if (accessScope === "ALL_PEOPLE") {
+//             personIds = [];
+//             linkPersonId = null;
+//         } else {
+//             if (!personIds.length) {
+//                 return res.status(400).json({
+//                     success: false,
+//                     message: "Select at least one person",
+//                 });
+//             }
+
+//             const validPeople = await Person.countDocuments({
+//                 _id: { $in: personIds },
+//                 householdId,
+//                 status: "ACTIVE",
+//             });
+
+//             if (validPeople !== new Set(personIds.map(String)).size) {
+//                 return res.status(400).json({
+//                     success: false,
+//                     message: "One or more selected people are invalid",
+//                 });
+//             }
+
+//             if (linkPersonId) {
+//                 const person = await Person.findOne({
+//                     _id: linkPersonId,
+//                     householdId,
+//                 });
+
+//                 if (!person) {
+//                     return res.status(404).json({
+//                         success: false,
+//                         message: "Person to link was not found",
+//                     });
+//                 }
+
+//                 if (person.linkedUserId) {
+//                     return res.status(409).json({
+//                         success: false,
+//                         message: "This person is already linked to a login",
+//                     });
+//                 }
+//             }
+//         }
+
+//         const rawToken = crypto.randomBytes(32).toString("hex");
+//         const tokenHash = hashInvitationToken(rawToken);
+
+//         const invitation = await HouseholdInvitation.create({
+//             householdId,
+//             recipientEmail,
+//             recipientMobile,
+//             role,
+//             accessScope,
+//             personIds,
+//             linkPersonId,
+//             tokenHash,
+//             invitedBy: req.user.id,
+//             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+//         });
+
+//         // ---- Build both URLs ----
+
+//         // Web (kept for desktop / future web app / fallback)
+//         const inviteWebUrl = process.env.FRONTEND_URL
+//             ? `${process.env.FRONTEND_URL}/accept-invitation?token=${rawToken}`
+//             : null;
+
+//         // Mobile deep link (opens the Flutter app directly)
+//         const scheme = process.env.MOBILE_DEEPLINK_SCHEME || "assetmanager";
+//         const inviteDeepLink =
+//             `${scheme}://accept-invitation?token=${rawToken}`;
+
+//         // Send invitation notifications only when enabled in .env
+//         if (process.env.SEND_REAL_INVITES === "true") {
+//             const household = await Household.findById(householdId);
+
+//             const inviter = await User.findById(req.user.id)
+//                 .select("name");
+
+//             if (!household || !inviter) {
+//                 invitation.status = "REVOKED";
+//                 await invitation.save();
+
+//                 throw new Error("Household or inviter not found");
+//             }
+
+//             try {
+//                 const deliveries = [];
+
+//                 // Send invitation to email
+//                 if (recipientEmail) {
+//                     deliveries.push(
+//                         sendHouseholdInvitationEmail({
+//                             email: recipientEmail,
+//                             householdName: household.name,
+//                             inviterName: inviter.name,
+//                             inviteDeepLink,
+//                             inviteWebUrl,
+//                         })
+//                     );
+//                 }
+
+//                 // // Send invitation to mobile through SMS
+//                 // if (recipientMobile) {
+//                 //     deliveries.push(
+//                 //         sendHouseholdInvitationSms({
+//                 //             mobile: recipientMobile,
+//                 //             householdName: household.name,
+//                 //             inviteUrl,
+//                 //         })
+//                 //     );
+//                 // }
+
+//                 await Promise.all(deliveries);
+
+//             } catch (error) {
+//                 invitation.status = "REVOKED";
+//                 await invitation.save();
+
+//                 throw error;
+//             }
+//         }
+
+//         const response = {
+//             invitationId: invitation._id,
+//             status: invitation.status,
+//             expiresAt: invitation.expiresAt,
+//         };
+
+//         // Expose the invitation URL only for local development.
+//        if (
+//             process.env.NODE_ENV !== "production" &&
+//             process.env.SEND_REAL_INVITES !== "true"
+//         ) {
+//             response.devInviteDeepLink = inviteDeepLink;
+//             if (inviteWebUrl) response.devInviteWebUrl = inviteWebUrl;
+//         }
+
+//         return res.status(201).json({
+//             success: true,
+//             message: "Invitation created",
+//             data: response,
+//         });
+//     } catch (error) {
+//         next(error);
+//     }
+// };
+
+//new code
 const createInvitation = async (req, res, next) => {
     try {
         const { householdId } = req.params;
@@ -154,8 +374,18 @@ const createInvitation = async (req, res, next) => {
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
 
-        const inviteUrl =
-            `${process.env.FRONTEND_URL}/accept-invitation?token=${rawToken}`;
+        // ---- Build public URLs ----
+
+        const publicBase = (process.env.PUBLIC_BASE_URL || "http://10.0.2.2:5000")
+            .replace(/\/+$/, "");
+
+        // HTTPS URLs sent in the email (Gmail-safe)
+        const appLink = `${publicBase}/open-app?token=${rawToken}`;
+        const webLink = `${publicBase}/open-web?token=${rawToken}`;
+
+        // Direct deep link — kept for adb testing / dev response
+        const scheme = process.env.MOBILE_DEEPLINK_SCHEME || "assetmanager";
+        const inviteDeepLink = `${scheme}://accept-invitation?token=${rawToken}`;
 
         // Send invitation notifications only when enabled in .env
         if (process.env.SEND_REAL_INVITES === "true") {
@@ -181,7 +411,9 @@ const createInvitation = async (req, res, next) => {
                             email: recipientEmail,
                             householdName: household.name,
                             inviterName: inviter.name,
-                            inviteUrl,
+                            appLink,
+                            webLink,
+                            inviteToken: rawToken,
                         })
                     );
                 }
@@ -213,12 +445,14 @@ const createInvitation = async (req, res, next) => {
             expiresAt: invitation.expiresAt,
         };
 
-        // Expose the invitation URL only for local development.
+        // Expose the invitation URLs only for local development.
         if (
             process.env.NODE_ENV !== "production" &&
             process.env.SEND_REAL_INVITES !== "true"
         ) {
-            response.devInviteUrl = inviteUrl;
+            response.devAppLink = appLink;
+            response.devWebLink = webLink;
+            response.devInviteDeepLink = inviteDeepLink;
         }
 
         return res.status(201).json({
@@ -230,7 +464,6 @@ const createInvitation = async (req, res, next) => {
         next(error);
     }
 };
-
 
 const acceptInvitation = async (req, res, next) => {
     const dbSession = await mongoose.startSession();
