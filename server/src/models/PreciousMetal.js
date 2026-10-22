@@ -18,7 +18,7 @@ const preciousMetalSchema = new mongoose.Schema(
 
     metalType: {
       type: String,
-      enum: ["GOLD", "SILVER"],
+      enum: ["GOLD", "SILVER", "PLATINUM", "OTHER"],
       required: true,
     },
 
@@ -39,19 +39,9 @@ const preciousMetalSchema = new mongoose.Schema(
       default: "GRAM",
     },
 
-    /*
-      GOLD:
-        24 = 24K
-        22 = 22K
-        18 = 18K
-
-      SILVER:
-        999 = 999 purity
-        925 = 925 purity
-    */
     purity: {
       type: Number,
-      required: true,
+      min: 0,
     },
 
     purchaseDate: {
@@ -67,12 +57,7 @@ const preciousMetalSchema = new mongoose.Schema(
 
     source: {
       type: String,
-      enum: [
-        "PURCHASED",
-        "GIFT",
-        "INHERITED",
-        "OTHER",
-      ],
+      enum: ["PURCHASED", "GIFT", "INHERITED", "OTHER"],
       default: "PURCHASED",
     },
 

@@ -9,8 +9,6 @@ const personRoutes = require("./routes/person.routes");
 const householdInvitationRoutes = require("./routes/householdInvitation.routes");
 const invitationRoutes = require("./routes/invitation.routes");
 const preciousMetalRoutes = require("./routes/preciousMetal.routes");
-const metalPriceRoutes = require("./routes/metalPrice.routes");
-const startMetalPriceJob = require("./jobs/metalPrice.job");
 
 const {
   errorHandler,
@@ -72,14 +70,6 @@ app.use(
   preciousMetalRoutes
 );
 
-app.use(
-  "/api/v1",
-  metalPriceRoutes
-);
-// /*
-//  * Start daily price scheduler
-//  */
-// startMetalPriceJob()
 
 // -----------------------------------------------------------------------------
 // Mobile deep-link redirect page
