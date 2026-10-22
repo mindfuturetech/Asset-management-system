@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Check, Copy, Mail, Phone, Send, ShieldCheck, UserCheck } from "lucide-react";
+import { Check, Copy, Mail, Phone, Plus, Send, ShieldCheck, UserCheck } from "lucide-react";
 import Avatar from "../components/ui/Avatar";
 import Button from "../components/ui/Button";
+import Modal from "../components/ui/Modal";
 import TextField from "../components/ui/TextField";
 import EmptyState from "../components/ui/EmptyState";
 import Alert from "../components/ui/Alert";
@@ -13,6 +14,7 @@ import useFamilyMembers from "../hooks/useFamilyMembers";
 import {
     ACCESS_SCOPE,
     INVITE_ROLES,
+    getMyAccess,
     roleLabel,
     sendInvitation,
 } from "../services/grantAccess.service";
@@ -38,6 +40,19 @@ function scopeText(access) {
         return `${n} ${n === 1 ? "person" : "people"}`;
     }
     return "";
+}
+
+// Line under a household's name in My Access: who shared it and which family it covers.
+// `knownNames` = the family members we already have loaded for this household
+// (my-access returns no names for ALL_PEOPLE).
+function accessSummary(h, knownNames = []) {
+    const scope =
+        h.accessScope === ACCESS_SCOPE.ALL
+            ? knownNames.length
+                ? `All family: ${knownNames.join(", ")}`
+                : "All family members"
+            : h.people?.map((p) => p.name).filter(Boolean).join(", ") || "Selected family members";
+    return h.sharedBy?.name ? `Shared by ${h.sharedBy.name} · ${scope}` : scope;
 }
 
 function ListSkeleton() {
@@ -67,15 +82,47 @@ export default function GrantAccess() {
         reload: reloadFamily,
     } = useFamilyMembers(householdId);
 
+    const [inviteOpen, setInviteOpen] = useState(false);
     const [form, setForm] = useState(EMPTY_FORM);
     const [formError, setFormError] = useState("");
     const [sending, setSending] = useState(false);
     const [result, setResult] = useState(null);
     const [copied, setCopied] = useState(false);
 
+    // Every household I belong to, mine included (GET /households/my-access).
+    const [myAccess, setMyAccess] = useState([]);
+    const [accessLoading, setAccessLoading] = useState(true);
+    const [accessError, setAccessError] = useState("");
+    const [accessReloadKey, setAccessReloadKey] = useState(0);
+
     const loading = householdLoading && !household;
 
-    /* ---------- who has what (derived from the household's access records) ---------- */
+    const userId = user?._id;
+
+    useEffect(() => {
+        if (!userId) return undefined; // session still restoring - stay in the loading state
+
+        let active = true;
+        setAccessLoading(true);
+        setAccessError("");
+
+        getMyAccess()
+            .then((data) => {
+                if (active) setMyAccess(data);
+            })
+            .catch((err) => {
+                if (active) setAccessError(getErrorMessage(err, "Couldn't load your access."));
+            })
+            .finally(() => {
+                if (active) setAccessLoading(false);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [userId, accessReloadKey]);
+
+    /* ---------- who has what ---------- */
 
     const myMembership = members.find((m) => m.userId?._id === user?._id);
     const myRole = myMembership?.role;
@@ -87,15 +134,30 @@ export default function GrantAccess() {
     );
     const selectedRole = roleOptions.find((r) => r.value === form.role);
 
-    // Card 1: people I have given access to.
+    // My Access: my own household (role Owner) first, then households shared with me.
+    const myAccessList = [...myAccess].sort(
+        (a, b) => Number(b.role === "OWNER") - Number(a.role === "OWNER")
+    );
+
+    // Access given: people I have given access to.
     const accessGiven = members.filter((m) => m.userId && m.userId._id !== user?._id);
 
-    // Card 2: who has shared this household with me (empty for the owner).
-    const owner = members.find((m) => m.role === "OWNER");
-    const sharedBy = myMembership?.grantedBy?.name || owner?.userId?.name || "Household owner";
-    const gotAccess = myMembership && myRole !== "OWNER" ? [myMembership] : [];
+    /* ---------- invite modal ---------- */
 
-    /* ---------- form handlers ---------- */
+    const openInvite = () => setInviteOpen(true);
+
+    const closeInvite = useCallback(() => {
+        setInviteOpen(false);
+        setForm(EMPTY_FORM);
+        setFormError("");
+        setResult(null);
+        setCopied(false);
+    }, []);
+
+    const inviteAnother = () => {
+        setResult(null);
+        setCopied(false);
+    };
 
     const setField = (name, value) => {
         setForm((f) => ({ ...f, [name]: value }));
@@ -141,7 +203,7 @@ export default function GrantAccess() {
                 accessScope: form.scope,
                 personIds: form.personIds,
             });
-            setResult(res);
+            setResult(res); // switches the modal to its success view
             toast.success(`Invitation created for ${email || mobile}.`);
             setForm(EMPTY_FORM);
         } catch (err) {
@@ -170,120 +232,155 @@ export default function GrantAccess() {
                     <h1>Grant Access</h1>
                     <p>Decide who can see and manage your household's assets.</p>
                 </div>
+                <Button icon={Plus} onClick={openInvite} disabled={loading}>
+                    Invite
+                </Button>
             </header>
 
             <div className="ga-grid">
-                <div className="ga-col">
-                    {/* 1. Access given */}
-                    <section className="panel" aria-labelledby="ga-given-title">
-                        <div className="panel__header">
-                            <div>
-                                <h2 id="ga-given-title" className="ga-title">
-                                    Access given
-                                    <span className="ga-count">{loading ? "–" : accessGiven.length}</span>
-                                </h2>
-                                <p className="ga-sub">People you have given access to.</p>
-                            </div>
-                        </div>
-
-                        {loading ? (
-                            <ListSkeleton />
-                        ) : accessGiven.length === 0 ? (
-                            <EmptyState
-                                icon={UserCheck}
-                                title="No one yet"
-                                description="Invite someone and they will appear here once they accept."
-                            />
-                        ) : (
-                            <ul className="list">
-                                {accessGiven.map((m) => (
-                                    <li key={m._id} className="list__row">
-                                        <Avatar name={m.userId.name || m.userId.email || "User"} size={42} />
-                                        <div className="list__main">
-                                            <strong>{m.userId.name || "Unnamed"}</strong>
-                                            <span>{m.userId.email || m.userId.mobile}</span>
-                                        </div>
-                                        {scopeText(m) && <span className="tag">{scopeText(m)}</span>}
-                                        <span className="tag">{roleLabel(m.role)}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </section>
-
-                    {/* 2. Got access */}
-                    <section className="panel" aria-labelledby="ga-got-title">
-                        <div className="panel__header">
-                            <div>
-                                <h2 id="ga-got-title" className="ga-title">
-                                    Got access
-                                    <span className="ga-count">{loading ? "–" : gotAccess.length}</span>
-                                </h2>
-                                <p className="ga-sub">Households shared with you.</p>
-                            </div>
-                        </div>
-
-                        {loading ? (
-                            <ListSkeleton />
-                        ) : gotAccess.length === 0 ? (
-                            <EmptyState
-                                icon={ShieldCheck}
-                                title="Nothing shared with you"
-                                description="When someone invites you to their household, it will show up here."
-                            />
-                        ) : (
-                            <ul className="list">
-                                {gotAccess.map((m) => (
-                                    <li key={m._id} className="list__row">
-                                        <Avatar name={sharedBy} size={42} />
-                                        <div className="list__main">
-                                            <strong>{household?.name || "Household"}</strong>
-                                            <span>Shared by {sharedBy}</span>
-                                        </div>
-                                        {scopeText(m) && <span className="tag">{scopeText(m)}</span>}
-                                        <span className="tag">{roleLabel(m.role)}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </section>
-                </div>
-
-                {/* 3. Give access */}
-                <section className="panel" aria-labelledby="ga-give-title">
+                {/* My access */}
+                <section className="panel" aria-labelledby="ga-mine-title">
                     <div className="panel__header">
                         <div>
-                            <h2 id="ga-give-title" className="ga-title">Give access</h2>
-                            <p className="ga-sub">Send an invitation by email or mobile number.</p>
+                            <h2 id="ga-mine-title" className="ga-title">
+                                My access
+                                <span className="ga-count">{accessLoading ? "–" : myAccessList.length}</span>
+                            </h2>
+                            <p className="ga-sub">Your household and any shared with you.</p>
                         </div>
                     </div>
 
-                    <form className="ga-form" onSubmit={handleSubmit} noValidate>
+                    {accessLoading ? (
+                        <ListSkeleton />
+                    ) : accessError ? (
+                        <EmptyState
+                            icon={ShieldCheck}
+                            title="Couldn't load your access"
+                            description={accessError}
+                            action={
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => setAccessReloadKey((k) => k + 1)}
+                                >
+                                    Try again
+                                </Button>
+                            }
+                        />
+                    ) : myAccessList.length === 0 ? (
+                        <EmptyState
+                            icon={ShieldCheck}
+                            title="No access yet"
+                            description="Your household and any household shared with you will show up here."
+                        />
+                    ) : (
+                        <ul className="list">
+                            {myAccessList.map((h) => {
+                                const isOwn = h.role === "OWNER";
+                                const isActive = String(h.householdId) === String(householdId);
+                                const knownNames = isActive ? familyMembers.map((p) => p.name) : [];
+                                return (
+                                    <li key={h.householdId} className="list__row">
+                                        <Avatar name={h.householdName || "Household"} size={42} />
+                                        <div className="list__main">
+                                            <strong>
+                                                {h.householdName || "Household"}
+                                                {isOwn ? (
+                                                    <span className="tag tag--you">Yours</span>
+                                                ) : (
+                                                    isActive && <span className="tag tag--you">Current</span>
+                                                )}
+                                            </strong>
+                                            <span>{accessSummary(h, knownNames)}</span>
+                                        </div>
+                                        <span className="tag">{roleLabel(h.role)}</span>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
+                </section>
+
+                {/* Access given */}
+                <section className="panel" aria-labelledby="ga-given-title">
+                    <div className="panel__header">
+                        <div>
+                            <h2 id="ga-given-title" className="ga-title">
+                                Access given
+                                <span className="ga-count">{loading ? "–" : accessGiven.length}</span>
+                            </h2>
+                            <p className="ga-sub">People you have given access to.</p>
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <ListSkeleton />
+                    ) : accessGiven.length === 0 ? (
+                        <EmptyState
+                            icon={UserCheck}
+                            title="No one yet"
+                            description="Invite someone and they will appear here once they accept."
+                            action={
+                                <Button icon={Plus} onClick={openInvite}>
+                                    Invite
+                                </Button>
+                            }
+                        />
+                    ) : (
+                        <ul className="list">
+                            {accessGiven.map((m) => (
+                                <li key={m._id} className="list__row">
+                                    <Avatar name={m.userId.name || m.userId.email || "User"} size={42} />
+                                    <div className="list__main">
+                                        <strong>{m.userId.name || "Unnamed"}</strong>
+                                        <span>{m.userId.email || m.userId.mobile}</span>
+                                    </div>
+                                    {scopeText(m) && <span className="tag">{scopeText(m)}</span>}
+                                    <span className="tag">{roleLabel(m.role)}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
+            </div>
+
+            {/* Invite modal */}
+            <Modal
+                open={inviteOpen}
+                title={result ? "Invitation created" : "Invite someone"}
+                onClose={closeInvite}
+            >
+                {result ? (
+                    <div className="modal__form ga-modal-form">
+                        <Alert type="success">
+                            Invitation created. It expires on {formatDate(result.expiresAt)}.
+                        </Alert>
+                        {result.devInviteUrl && (
+                            <div className="ga-devlink">
+                                <code title={result.devInviteUrl}>{result.devInviteUrl}</code>
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    icon={copied ? Check : Copy}
+                                    onClick={copyLink}
+                                >
+                                    {copied ? "Copied" : "Copy link"}
+                                </Button>
+                            </div>
+                        )}
+                        <div className="modal__actions">
+                            <Button variant="ghost" onClick={inviteAnother}>
+                                Invite another
+                            </Button>
+                            <Button onClick={closeInvite}>Done</Button>
+                        </div>
+                    </div>
+                ) : (
+                    <form className="modal__form ga-modal-form" onSubmit={handleSubmit} noValidate>
                         {!loading && !canInvite && (
                             <Alert type="error">Only the owner or an admin can invite people.</Alert>
                         )}
                         <Alert type="error">{formError}</Alert>
-
-                        {result && (
-                            <div className="ga-result">
-                                <Alert type="success">
-                                    Invitation created. It expires on {formatDate(result.expiresAt)}.
-                                </Alert>
-                                {result.devInviteUrl && (
-                                    <div className="ga-devlink">
-                                        <code title={result.devInviteUrl}>{result.devInviteUrl}</code>
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            icon={copied ? Check : Copy}
-                                            onClick={copyLink}
-                                        >
-                                            {copied ? "Copied" : "Copy link"}
-                                        </Button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
 
                         <fieldset className="ga-lock" disabled={loading || !canInvite || sending}>
                             <TextField
@@ -421,14 +518,24 @@ export default function GrantAccess() {
                                     </div>
                                 )}
                             </div>
+                        </fieldset>
 
-                            <Button type="submit" icon={Send} loading={sending}>
+                        <div className="modal__actions">
+                            <Button variant="ghost" onClick={closeInvite}>
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                icon={Send}
+                                loading={sending}
+                                disabled={loading || !canInvite}
+                            >
                                 Send invitation
                             </Button>
-                        </fieldset>
+                        </div>
                     </form>
-                </section>
-            </div>
+                )}
+            </Modal>
         </div>
     );
 }

@@ -11,6 +11,10 @@ import { api } from "./api";
  *     { token }
  *     -> { householdId, role, accessScope, personIds }
  *
+ *   GET  {MY_ACCESS_PATH}
+ *     -> [{ householdId, householdName, role, accessScope,
+ *           people: [{ personId, name, relationship }], status, sharedBy? }]
+ *
  * Paths follow app.js (api's baseURL already supplies "/api/v1"):
  *   app.use("/api/v1/households", householdInvitationRoutes)  -> INVITATIONS_BASE = "/households"
  *   app.use("/api/v1/invitations", invitationRoutes)          -> ACCEPT_BASE      = "/invitations"
@@ -19,6 +23,7 @@ import { api } from "./api";
  */
 const INVITATIONS_BASE = "/households";
 const ACCEPT_BASE = "/invitations";
+const MY_ACCESS_PATH = "/households/my-access";
 
 export const ACCESS_SCOPE = {
   ALL: "ALL_PEOPLE",
@@ -57,6 +62,20 @@ const ROLE_LABELS = {
 };
 
 export const roleLabel = (role) => ROLE_LABELS[role] || role || "";
+
+/* ---------------- households shared with me (Got Access card) ---------------- */
+
+/*
+ * Every household the logged-in user belongs to - INCLUDING their own
+ * (role OWNER). Filter OWNER out to get "households shared with me".
+ * `people` is empty when accessScope is ALL_PEOPLE (that means everyone).
+ * `sharedBy` ({ name, email }) is optional: the backend adds it if it
+ * populates grantedBy in getMyHouseholdAccess.
+ */
+export const getMyAccess = async () => {
+  const { data } = await api.get(MY_ACCESS_PATH);
+  return data.data;
+};
 
 /* ---------------- send an invitation (Give Access card) ---------------- */
 

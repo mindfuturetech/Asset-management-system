@@ -1,14 +1,11 @@
 /* ============ Grant Access ============ */
+
+/* My access + Access given, side by side at equal height */
 .ga-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
-    align-items: start;
-}
-
-.ga-col {
-    display: grid;
-    gap: 20px;
+    align-items: stretch;
 }
 
 /* Card headers */
@@ -40,11 +37,11 @@
     flex: none;
 }
 
-/* Give-access form */
-.ga-form {
+/* Invite modal form */
+.ga-modal-form {
     display: grid;
     gap: 16px;
-    padding: 20px 22px 22px;
+    min-width: 0;
 }
 
 .ga-lock {
@@ -70,12 +67,7 @@
     color: var(--primary);
 }
 
-/* Success + dev invite link */
-.ga-result {
-    display: grid;
-    gap: 10px;
-}
-
+/* Dev invite link (success view) */
 .ga-devlink {
     display: flex;
     align-items: center;
@@ -147,7 +139,7 @@
 }
 
 .ga-checklist {
-    max-height: 280px;
+    max-height: 240px;
     overflow-y: auto;
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -207,11 +199,5 @@
 @media (max-width: 900px) {
     .ga-grid {
         grid-template-columns: minmax(0, 1fr);
-    }
-}
-
-@media (max-width: 560px) {
-    .ga-form {
-        padding: 16px;
     }
 }
