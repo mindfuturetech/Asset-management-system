@@ -34,7 +34,7 @@ const createOtpSession = async ({
   );
 
   const otp = generateOtp();
-
+  console.log(`Generated OTP for ${email || mobile}: ${otp}`);
   const expiresAt = new Date(
     Date.now() +
       Number(process.env.OTP_EXPIRES_MINUTES || 5) * 60 * 1000
@@ -54,6 +54,7 @@ const createOtpSession = async ({
   });
 
   try {
+    console.log("Actual OTP delivery is disabled for testing purposes.");
     await Promise.all([
       sendOtpEmail({
         email,

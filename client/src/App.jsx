@@ -7,6 +7,8 @@ import DashboardPage from "./pages/DashboardPage";
 import FamilyPage from "./pages/FamilyPage";
 import GrantAceess from "./pages/GrantAccess";
 import AcceptInvitationPage from "./pages/AcceptInvitation";
+import PortfolioPage from "./pages/PortfolioPage";
+import PreciousMetalsPage from "./pages/PreciousMetalsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 export default function App() {
@@ -26,6 +28,8 @@ export default function App() {
           <Route path="/dashboard" element={<Navigate to="/" replace />} />
           <Route path="/grant-access" element={<GrantAceess />} />
           <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+          <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/portfolio/precious-metals" element={<PreciousMetalsPage />} />
         </Route>
       </Route>
 
