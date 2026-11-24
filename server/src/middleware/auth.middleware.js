@@ -5,7 +5,7 @@ const protect = (req, res, next) => {
     const authHeader =
       req.headers.authorization;
 
-      console.log("Authorization header:", authHeader);
+     // console.log("Authorization header:", authHeader);
 
     if (
       !authHeader ||

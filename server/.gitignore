@@ -2,3 +2,13 @@ node_modules/
 .env
 logs/
 uploads/
+# Stock master source files
+data/stock-master/
+
+# Import reports
+logs/
+
+# Excel files
+# Stock master CSV files
+src/data/stock-master/EQUITY_L.csv
+src/data/stock-master/equity.csv

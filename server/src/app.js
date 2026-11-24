@@ -9,6 +9,10 @@ const personRoutes = require("./routes/person.routes");
 const householdInvitationRoutes = require("./routes/householdInvitation.routes");
 const invitationRoutes = require("./routes/invitation.routes");
 const preciousMetalRoutes = require("./routes/preciousMetal.routes");
+const propertyRoutes = require("./routes/property.routes");
+const stockTransactionRoutes = require("./routes/stockTransaction.routes");
+const stockImportRoutes = require("./routes/stockImport.routes");
+const stockHoldingRoutes = require("./routes/stockHolding.routes");
 
 const {
   errorHandler,
@@ -70,6 +74,16 @@ app.use(
   preciousMetalRoutes
 );
 
+app.use(
+  "/api/v1",
+  propertyRoutes
+);
+
+app.use("/api/v1", stockTransactionRoutes);
+
+app.use("/api/v1", stockImportRoutes);
+
+app.use("/api/v1", stockHoldingRoutes);
 
 // -----------------------------------------------------------------------------
 // Mobile deep-link redirect page
